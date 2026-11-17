@@ -317,7 +317,7 @@ async function refresh() {
   if (key !== shown) {  // only rebuild when clips change, so playing videos aren't interrupted
     const before = new Set($$('.clip').map(c => c.dataset.name));
     $('#gallery').innerHTML = s.clips.map(c => `<div class="clip ${!firstLoad && !before.has(c.name) ? 'new' : ''}" data-name="${esc(c.name)}">
-      <video src="/clips/${encodeURIComponent(c.name)}" controls preload="metadata" playsinline></video>
+      <video src="/clips/${encodeURIComponent(c.name)}#t=0.5" controls preload="metadata" playsinline></video>
       <div class="meta"><div class="name" title="${esc(c.name)}">${esc(c.name.replace(/\.mp4$/, ''))}</div><div class="sub">${fmtTime(c.time)} · ${fmtSize(c.size)}</div>
       <div class="acts"><a class="btn ghost" href="/clips/${encodeURIComponent(c.name)}" download>Download</a><button class="btn ghost danger" data-del="${esc(c.name)}">Delete</button></div></div></div>`).join('');
     $$('[data-del]').forEach(b => b.onclick = () => confirm(`Delete ${b.dataset.del}? This can't be undone.`) && post('/api/clips/' + encodeURIComponent(b.dataset.del), 'DELETE'));

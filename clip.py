@@ -219,10 +219,11 @@ def render(video, clip, idx, words, a):
         subprocess.run([FFMPEG, "-y", "-loglevel", "error", "-ss", str(clip["start"]),
                         "-to", str(clip["end"]), "-i", str(video.resolve()), "-vf", vf,
                         "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-c:a", "aac",
-                        "-movflags", "+faststart", out],
+                        "-movflags", "+faststart", f"{tmp}.mp4"],
                        cwd=OUT, check=True)  # cwd=OUT: filter args use bare names, dodging Windows path escaping
+        os.replace(OUT / f"{tmp}.mp4", OUT / out)  # only finished clips get a visible name
     finally:
-        sub.unlink(missing_ok=True); (OUT / f"{tmp}.cmd").unlink(missing_ok=True)
+        for ext in ("ass", "cmd", "mp4"): (OUT / f"{tmp}.{ext}").unlink(missing_ok=True)
     print("  ->", OUT / out, flush=True)
 
 
