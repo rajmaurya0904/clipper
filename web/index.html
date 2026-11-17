@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clipper</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111'/><path d='M12 9l12 7-12 7z' fill='%23FFE600'/></svg>">
+<style>
+:root{
+  --bg:#f6f6f4; --panel:#fff; --ink:#16161a; --muted:#6b6b76; --line:#e6e6e2; --soft:#f0f0ed;
+  --accent:#16161a; --accent-ink:#fff; --good:#12a150; --bad:#d33a2c; --warn:#c98a00; --live:#e5322d;
+  --radius:16px; --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e0e11; --panel:#17171b; --ink:#f2f2f0; --muted:#9a9aa5; --line:#2a2a31; --soft:#1f1f25;
+  --accent:#f2f2f0; --accent-ink:#111; --shadow:none;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 80px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:-.02em}
+.logo{width:32px;height:32px;border-radius:9px;background:#111;display:grid;place-items:center}
+.logo svg{width:16px}
+.pill{font-size:12px;padding:4px 10px;border-radius:99px;background:var(--soft);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
+.pill.on{color:var(--good);border-color:color-mix(in srgb,var(--good) 35%,transparent)}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 12px;font-weight:600}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.stack>*+*{margin-top:20px}
+.tabs{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:18px}
+.tab{border:0;background:none;color:var(--muted);padding:8px 14px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tab[aria-selected=true]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--live)}
+.lead{color:var(--muted);margin:-4px 0 18px;font-size:14px}
+.urlrow{display:flex;gap:10px}
+@media (max-width:560px){.urlrow{flex-direction:column}}
+input,select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--ink)}
+input.url{font-size:16px;padding:13px 14px}
+.btn{border:0;border-radius:10px;padding:12px 20px;font:inherit;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-ink);white-space:nowrap;transition:transform .05s,opacity .15s}
+.btn:active{transform:scale(.98)} .btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:var(--soft);color:var(--ink);border:1px solid var(--line);padding:7px 12px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn.live{background:var(--live);color:#fff}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:20px}
+label.f{display:block;font-size:13px;font-weight:600}
+label.f small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin:2px 0 6px}
+.range{display:flex;align-items:center;gap:10px}
+.range input{padding:0;accent-color:var(--ink)}
+.range output{min-width:46px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.pair{display:flex;gap:8px;align-items:center}
+details{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+.error{color:var(--bad);font-size:14px;margin-top:10px;min-height:1px}
+.how{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.how span{font-size:12px;color:var(--muted);background:var(--soft);border-radius:8px;padding:5px 9px}
+.how b{color:var(--ink);font-weight:600}
+/* style card */
+.styleflex{display:flex;gap:20px}
+@media (max-width:560px){.styleflex{flex-direction:column-reverse}}
+.phone{flex:0 0 150px;aspect-ratio:9/16;border-radius:18px;overflow:hidden;position:relative;
+  background:radial-gradient(120% 80% at 50% 25%,#7d8aa8 0,#3a3f55 45%,#15161d 100%);align-self:flex-start}
+.phone .face{position:absolute;left:50%;top:26%;width:46%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle at 45% 40%,#e9c4a6,#b98563)}
+.phone .body{position:absolute;left:50%;top:52%;width:84%;height:60%;transform:translateX(-50%);border-radius:45% 45% 0 0;background:#2b2f3c}
+.cap{position:absolute;left:4px;right:4px;bottom:21%;text-align:center;font-weight:900;font-size:13px;line-height:1.2;color:#fff;
+  text-shadow:0 0 2px #000,0 0 2px #000,1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,0 2px 4px rgba(0,0,0,.6)}
+.cap span{display:inline-block;margin:0 2px;transition:transform .09s}
+.cap span.on{transform:scale(1.18)}
+.cap span.big.on{transform:scale(1.35)}
+.phone.fit{background:#000} .phone.fit .scene{position:absolute;inset:36% 0;overflow:hidden;background:radial-gradient(120% 80% at 50% 25%,#7d8aa8 0,#3a3f55 45%,#15161d 100%)}
+.phone.fit .face{top:10%;width:20%} .phone.fit .body{top:52%;width:36%;height:80%}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatches input{width:40px;height:36px;padding:3px;cursor:pointer}
+.seg{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{flex:1;border:0;background:none;padding:7px 8px;border-radius:7px;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
+/* jobs */
+.job{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel)}
+.job+.job{margin-top:12px}
+.jobhead{display:flex;align-items:center;gap:10px}
+.jobhead .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:14px}
+.badge{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--soft);color:var(--muted)}
+.badge.running{color:var(--warn)} .badge.done{color:var(--good)} .badge.failed{color:var(--bad)}
+.badge.live{background:var(--live);color:#fff}
+.stage{font-size:13px;color:var(--muted);margin:8px 0;overflow-wrap:anywhere}
+.bar{height:6px;background:var(--soft);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);border-radius:99px;transition:width .4s}
+.bar.indet i{width:30%;animation:slide 1.3s infinite ease-in-out}
+@keyframes slide{0%{margin-left:-30%}100%{margin-left:100%}}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.meter{background:var(--soft);border-radius:10px;padding:10px}
+.meter b{display:block;font-size:20px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.meter span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.hype{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;position:relative}
+.hype i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--good),var(--warn),var(--live));transition:width .5s}
+.hype em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.hypelbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+pre{font:12px/1.45 ui-monospace,Consolas,monospace;background:var(--soft);border-radius:8px;padding:10px;max-height:200px;overflow:auto;white-space:pre-wrap;margin:8px 0 0;color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:26px 10px;border:1px dashed var(--line);border-radius:12px}
+/* gallery */
+.galhead{display:flex;align-items:baseline;justify-content:space-between;margin:40px 0 14px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.clip{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.clip video{display:block;width:100%;aspect-ratio:9/16;background:#000;object-fit:contain}
+.clip .meta{padding:10px 12px}
+.clip .name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clip .sub{font-size:12px;color:var(--muted)}
+.clip .acts{display:flex;gap:6px;margin-top:8px}
+.clip .acts>*{flex:1;text-align:center;text-decoration:none}
+.new{animation:pop .5s ease}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><div class="logo"><svg viewBox="0 0 16 16"><path d="M4 2l10 6-10 6z" fill="#FFE600"/></svg></div>Clipper</div>
+    <span class="pill" id="claudePill" title="Claude picks the best moments when an Anthropic API key is set">Built-in moment picker</span>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: what to clip -->
+    <div class="stack">
+      <section class="card">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-tab="video">From a video</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="live"><span class="dot"></span>Live stream</button>
+        </div>
+
+        <form id="f-video" data-kind="video">
+          <p class="lead">Paste a YouTube link. Clipper finds the best moments and turns them into vertical clips with captions.</p>
+          <div class="urlrow">
+            <input class="url" name="url" type="url" placeholder="https://www.youtube.com/watch?v=..." required>
+            <button class="btn" type="submit">Make clips</button>
+          </div>
+          <div class="fields">
+            <label class="f">How many clips<small>Best moments to cut</small>
+              <div class="range"><input type="range" name="clips" min="1" max="10" value="3"><output></output></div></label>
+            <label class="f">Clip length (seconds)<small>Shortest – longest</small>
+              <div class="pair"><input type="number" name="min" min="5" max="600" value="25"><span>–</span><input type="number" name="max" min="5" max="600" value="60"></div></label>
+            <label class="f">Caption accuracy<small>Higher is slower</small>
+              <select name="model"><option value="base">Fast</option><option value="small" selected>Balanced</option><option value="medium">Best (slow)</option></select></label>
+          </div>
+          <details>
+            <summary>Smarter picks with Claude (optional)</summary>
+            <p class="lead" style="margin:8px 0">Without a key, Clipper picks fast-paced, punchy moments. With an Anthropic API key, Claude reads the whole transcript, picks real story beats and names each clip. The key is only used for this run and never saved.</p>
+            <input name="api_key" type="password" placeholder="sk-ant-..." autocomplete="off">
+          </details>
+          <div class="error"></div>
+          <div class="how"><span><b>1</b> Download</span><span><b>2</b> Transcribe</span><span><b>3</b> Pick moments</span><span><b>4</b> Track faces + captions</span></div>
+        </form>
+
+        <form id="f-live" data-kind="live" class="hidden">
+          <p class="lead">Paste a link to a stream that's live now. Clipper records it and watches chat. When chat suddenly explodes, it clips what just happened.</p>
+          <div class="urlrow">
+            <input class="url" name="url" type="url" placeholder="https://www.youtube.com/watch?v=... (live)" required>
+            <button class="btn live" type="submit">Start watching</button>
+          </div>
+          <div class="fields">
+            <label class="f">Sensitivity<small>Chat must be this many × faster than usual</small>
+              <div class="range"><input type="range" name="ratio" min="1.5" max="6" step="0.5" value="3"><output></output></div>
+              <div class="hypelbl"><span>More clips</span><span>Fewer, bigger moments</span></div></label>
+            <label class="f">Seconds before the spike<small>The moment that caused it</small>
+              <div class="range"><input type="range" name="before" min="15" max="120" step="5" value="60"><output></output></div></label>
+            <label class="f">Seconds after<small>The reaction</small>
+              <div class="range"><input type="range" name="after" min="0" max="30" step="1" value="10"><output></output></div></label>
+            <label class="f">Wait between clips<small>Stops double clips of one moment</small>
+              <div class="range"><input type="range" name="cooldown" min="20" max="300" step="10" value="60"><output></output></div></label>
+            <label class="f">Caption accuracy<small>Fast = clips ready sooner</small>
+              <select name="model"><option value="base" selected>Fast</option><option value="small">Balanced</option></select></label>
+          </div>
+          <div class="error"></div>
+          <div class="how"><span><b>1</b> Record stream</span><span><b>2</b> Count chat speed</span><span><b>3</b> Spike → cut last minute</span><span><b>4</b> Captions + tracking</span></div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Caption style</h2>
+        <div class="styleflex">
+          <div class="phone" id="phone"><div class="scene"><div class="face"></div><div class="body"></div></div><div class="cap" id="cap"></div></div>
+          <div style="flex:1;min-width:0" class="stack">
+            <label class="f">Font
+              <select id="s-font"><option>Arial Black</option><option>Impact</option><option>Verdana</option><option>Trebuchet MS</option><option>Comic Sans MS</option><option>Georgia</option></select></label>
+            <label class="f">Highlight colours<small>The spoken word lights up; colour changes every line</small>
+              <div class="swatches" id="s-colors"></div></label>
+            <label class="f">Words on screen
+              <div class="range"><input type="range" id="s-words" min="1" max="5" value="3"><output></output></div></label>
+            <label class="f">Framing
+              <div class="seg" id="s-frame"><button type="button" data-v="track" aria-pressed="true">Follow faces</button><button type="button" data-v="fit" aria-pressed="false">Fit whole video</button></div></label>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT: running jobs -->
+    <section class="card" style="position:sticky;top:16px">
+      <h2>Working on</h2>
+      <div id="jobs"><div class="empty">Nothing running. Paste a link to start.</div></div>
+    </section>
+  </div>
+
+  <div class="galhead"><h2 style="margin:0">Your clips <span id="count" class="pill" style="margin-left:6px">0</span></h2><span class="sub" style="color:var(--muted);font-size:13px">Saved in the <code>clips</code> folder</span></div>
+  <div class="gallery" id="gallery"></div>
+  <div class="empty hidden" id="galEmpty">Finished clips show up here.</div>
+</div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const store = { get(k, d) { try { return JSON.parse(localStorage.getItem('clipper.' + k)) ?? d } catch { return d } },
+                set(k, v) { try { localStorage.setItem('clipper.' + k, JSON.stringify(v)) } catch {} } };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ---- tabs
+function showTab(t) {
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  $('#f-video').classList.toggle('hidden', t !== 'video');
+  $('#f-live').classList.toggle('hidden', t !== 'live');
+  store.set('tab', t);
+}
+$$('.tab').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+showTab(store.get('tab', 'video'));
+
+// ---- range outputs + remember settings
+const units = { before: 's', after: 's', cooldown: 's', ratio: '×' };
+$$('input[type=range]').forEach(r => {
+  const key = (r.form ? r.form.id + '.' : '') + (r.name || r.id);
+  r.value = store.get(key, r.value);
+  const out = r.parentElement.querySelector('output');
+  const upd = () => { out.textContent = r.value + (units[r.name] || ''); store.set(key, r.value); preview(); };
+  r.addEventListener('input', upd); r.addEventListener('change', upd); setTimeout(upd);
+});
+$$('form select, form input[type=number]').forEach(el => {
+  const key = el.form.id + '.' + el.name;
+  el.value = store.get(key, el.value);
+  el.addEventListener('change', () => store.set(key, el.value));
+});
+
+// ---- caption style
+const style = { font: store.get('font', 'Arial Black'), colors: store.get('colors', ['#FFE600', '#00FF66', '#00E5FF', '#FF3EA5']),
+                frame: store.get('frame', 'track') };
+$('#s-font').value = style.font;
+$('#s-font').onchange = e => { style.font = e.target.value; store.set('font', style.font); preview(); };
+$('#s-colors').innerHTML = style.colors.map((c, i) => `<input type="color" value="${c}" data-i="${i}" aria-label="Highlight colour ${i + 1}">`).join('');
+$$('#s-colors input').forEach(inp => inp.oninput = () => { style.colors[inp.dataset.i] = inp.value.toUpperCase(); store.set('colors', style.colors); preview(); });
+$$('#s-frame button').forEach(b => b.onclick = () => { style.frame = b.dataset.v; store.set('frame', style.frame); preview(); });
+
+const SAMPLE = 'NO WAY HE ACTUALLY DID THAT BRO THIS IS INSANE 100 PERCENT'.split(' ');
+let tick = 0;
+function preview() {
+  const n = +$('#s-words').value, line = Math.floor(tick / n) % Math.ceil(SAMPLE.length / n), k = tick % n;
+  const words = SAMPLE.slice(line * n, line * n + n), col = style.colors[line % style.colors.length];
+  $('#cap').style.fontFamily = `"${style.font}", sans-serif`;
+  $('#cap').innerHTML = words.map((w, i) => `<span class="${i === k ? 'on' : ''} ${w.length >= 7 || /\d/.test(w) ? 'big' : ''}" style="${i === k ? 'color:' + col : ''}">${w}</span>`).join(' ');
+  $('#phone').classList.toggle('fit', style.frame === 'fit');
+  $$('#s-frame button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === style.frame));
+}
+setInterval(() => { tick++; preview(); }, 420);
+
+// ---- start a job
+$$('form[data-kind]').forEach(f => f.onsubmit = async e => {
+  e.preventDefault();
+  const err = $('.error', f), btn = $('button[type=submit]', f);
+  const body = Object.fromEntries(new FormData(f));
+  Object.assign(body, { kind: f.dataset.kind, font: style.font, words: $('#s-words').value,
+    color: style.colors.map(c => c.slice(1)).join(','), no_crop: style.frame === 'fit' });
+  err.textContent = ''; btn.disabled = true;
+  try {
+    const r = await fetch('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Could not start');
+    f.url.value = ''; refresh();
+  } catch (x) { err.textContent = x.message } finally { btn.disabled = false }
+});
+
+// ---- jobs + gallery
+const post = (u, method = 'POST') => fetch(u, { method, headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(refresh);
+const open = new Set();
+function jobHTML(j) {
+  const live = j.kind === 'live', running = j.status === 'running' || j.status === 'stopping';
+  const label = { running: live ? 'live' : 'working', stopping: 'stopping', done: 'done', failed: 'failed', stopped: 'stopped' }[j.status];
+  const stage = j.status === 'failed' ? (j.log.at(-1) || 'Something went wrong') : j.status === 'done' ? 'Finished — clips are below' : j.stage;
+  let body = `<div class="stage">${esc(stage)}</div>`;
+  if (live && j.stats.rate !== undefined) {
+    const ratio = j.stats.usual > 0 ? j.stats.rate / j.stats.usual : 0, thr = +j.ratio || 3, max = thr * 1.6;
+    body += `<div class="meters"><div class="meter"><b>${j.stats.rate.toFixed(1)}</b><span>msgs/s now</span></div>
+      <div class="meter"><b>${j.stats.usual.toFixed(1)}</b><span>usual</span></div><div class="meter"><b>${j.stats.clips}</b><span>clips</span></div></div>
+      <div class="hype"><i style="width:${Math.min(100, ratio / max * 100)}%"></i><em style="left:${thr / max * 100}%"></em></div>
+      <div class="hypelbl"><span>calm</span><span>clip line</span></div>`;
+  } else if (live && running) {
+    body += `<div class="bar indet"><i></i></div><div class="stage">Takes about a minute before it can spot spikes.</div>`;
+  } else if (running) {
+    body += j.step ? `<div class="bar"><i style="width:${(j.step[0] - .5) / j.step[1] * 100}%"></i></div>` : `<div class="bar indet"><i></i></div>`;
+  }
+  const acts = running ? `<button class="btn ghost danger" data-stop="${j.id}">${j.status === 'stopping' ? 'Stopping…' : 'Stop'}</button>`
+                       : `<button class="btn ghost" data-dismiss="${j.id}">Clear</button>`;
+  return `<div class="job"><div class="jobhead"><span class="badge ${live && running ? 'live' : j.status}">${label}</span>
+    <span class="t" title="${esc(j.url)}">${esc(j.url.replace(/^https?:\/\/(www\.)?/, ''))}</span>${acts}</div>${body}
+    <details ${open.has(j.id) ? 'open' : ''} data-log="${j.id}"><summary style="font-size:12px;color:var(--muted)">Details</summary><pre>${esc(j.log.join('\n'))}</pre></details></div>`;
+}
+let shown = '', firstLoad = true;
+const fmtSize = b => b > 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.round(b / 1e3) + ' KB';
+const fmtTime = t => new Date(t * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+async function refresh() {
+  let s; try { s = await (await fetch('/api/state')).json() } catch { return }
+  const pill = $('#claudePill');
+  pill.textContent = s.claude ? 'Claude picks moments' : 'Built-in moment picker'; pill.classList.toggle('on', s.claude);
+  const ratios = { live: $('#f-live [name=ratio]').value };
+  $('#jobs').innerHTML = s.jobs.length ? s.jobs.slice().reverse().map(j => jobHTML({ ...j, ratio: ratios.live })).join('')
+                                       : '<div class="empty">Nothing running. Paste a link to start.</div>';
+  $$('[data-stop]').forEach(b => b.onclick = () => post(`/api/jobs/${b.dataset.stop}/stop`));
+  $$('[data-dismiss]').forEach(b => b.onclick = () => post(`/api/jobs/${b.dataset.dismiss}/dismiss`));
+  $$('details[data-log]').forEach(d => { d.ontoggle = () => d.open ? open.add(d.dataset.log) : open.delete(d.dataset.log); const p = $('pre', d); p.scrollTop = p.scrollHeight; });
+  const key = s.clips.map(c => c.name + c.time).join('|');
+  if (key !== shown) {  // only rebuild when clips change, so playing videos aren't interrupted
+    const before = new Set($$('.clip').map(c => c.dataset.name));
+    $('#gallery').innerHTML = s.clips.map(c => `<div class="clip ${!firstLoad && !before.has(c.name) ? 'new' : ''}" data-name="${esc(c.name)}">
+      <video src="/clips/${encodeURIComponent(c.name)}" controls preload="metadata" playsinline></video>
+      <div class="meta"><div class="name" title="${esc(c.name)}">${esc(c.name.replace(/\.mp4$/, ''))}</div><div class="sub">${fmtTime(c.time)} · ${fmtSize(c.size)}</div>
+      <div class="acts"><a class="btn ghost" href="/clips/${encodeURIComponent(c.name)}" download>Download</a><button class="btn ghost danger" data-del="${esc(c.name)}">Delete</button></div></div></div>`).join('');
+    $$('[data-del]').forEach(b => b.onclick = () => confirm(`Delete ${b.dataset.del}? This can't be undone.`) && post('/api/clips/' + encodeURIComponent(b.dataset.del), 'DELETE'));
+    $('#count').textContent = s.clips.length; $('#galEmpty').classList.toggle('hidden', s.clips.length > 0);
+    shown = key; firstLoad = false;
+  }
+}
+refresh(); setInterval(refresh, 1500);
+</script>
+</body>
+</html>

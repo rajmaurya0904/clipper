@@ -1,0 +1,10 @@
+# generated clips, downloads, transcripts, live recordings
+clips/
+# bundled ffmpeg copy + face model (fetched automatically)
+_ffbin/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.claude/
+.impeccable/
