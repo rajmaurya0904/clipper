@@ -86,15 +86,15 @@ summary{cursor:pointer;font-weight:600;font-size:14px}
 .badge.live{background:var(--live);color:#fff}
 .stage{font-size:13px;color:var(--muted);margin:8px 0;overflow-wrap:anywhere}
 .bar{height:6px;background:var(--soft);border-radius:99px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--ink);border-radius:99px;transition:width .4s}
+.bar i{display:block;height:100%;background:var(--ink);border-radius:99px;transform-origin:left;transition:transform .4s}
 .bar.indet i{width:30%;animation:slide 1.3s infinite ease-in-out}
-@keyframes slide{0%{margin-left:-30%}100%{margin-left:100%}}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}
 .meters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .meter{background:var(--soft);border-radius:10px;padding:10px}
 .meter b{display:block;font-size:20px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .meter span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .hype{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;position:relative}
-.hype i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--good),var(--warn),var(--live));transition:width .5s}
+.hype i{position:absolute;inset:0;background:linear-gradient(90deg,var(--good),var(--warn),var(--live));transform-origin:left;transition:transform .5s}
 .hype em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
 .hypelbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
 pre{font:12px/1.45 ui-monospace,Consolas,monospace;background:var(--soft);border-radius:8px;padding:10px;max-height:200px;overflow:auto;white-space:pre-wrap;margin:8px 0 0;color:var(--muted)}
@@ -287,12 +287,12 @@ function jobHTML(j) {
     const ratio = j.stats.usual > 0 ? j.stats.rate / j.stats.usual : 0, thr = +j.ratio || 3, max = thr * 1.6;
     body += `<div class="meters"><div class="meter"><b>${j.stats.rate.toFixed(1)}</b><span>msgs/s now</span></div>
       <div class="meter"><b>${j.stats.usual.toFixed(1)}</b><span>usual</span></div><div class="meter"><b>${j.stats.clips}</b><span>clips</span></div></div>
-      <div class="hype"><i style="width:${Math.min(100, ratio / max * 100)}%"></i><em style="left:${thr / max * 100}%"></em></div>
+      <div class="hype"><i style="transform:scaleX(${Math.min(1, ratio / max)})"></i><em style="left:${thr / max * 100}%"></em></div>
       <div class="hypelbl"><span>calm</span><span>clip line</span></div>`;
   } else if (live && running) {
     body += `<div class="bar indet"><i></i></div><div class="stage">Takes about a minute before it can spot spikes.</div>`;
   } else if (running) {
-    body += j.step ? `<div class="bar"><i style="width:${(j.step[0] - .5) / j.step[1] * 100}%"></i></div>` : `<div class="bar indet"><i></i></div>`;
+    body += j.step ? `<div class="bar"><i style="transform:scaleX(${(j.step[0] - .5) / j.step[1]})"></i></div>` : `<div class="bar indet"><i></i></div>`;
   }
   const acts = running ? `<button class="btn ghost danger" data-stop="${j.id}">${j.status === 'stopping' ? 'Stopping…' : 'Stop'}</button>`
                        : `<button class="btn ghost" data-dismiss="${j.id}">Clear</button>`;
