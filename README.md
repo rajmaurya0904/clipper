@@ -51,6 +51,20 @@ Your browser opens **http://127.0.0.1:8765**. Paste a link, hit **Make clips**. 
 
 > 💡 First run downloads the speech model (≈140–460 MB depending on the accuracy setting) and a tiny face-detection model. After that, only YouTube needs the internet.
 
+## 🎮 Clip GTA 6 streams and videos
+
+GTA 6 streams are full of 10-second moments people replay for years. Clipper catches them for you.
+
+```bash
+# watch a GTA 6 live stream and clip every time chat explodes
+python live.py "https://youtube.com/watch?v=LIVE_ID" --ratio 3 --before 45 --after 10
+
+# or cut the best moments from a finished GTA 6 video
+python clip.py "https://youtube.com/watch?v=VIDEO_ID" --clips 8 --min 20 --max 45
+```
+
+Chat-spike detection suits gameplay well. A wild chase, a crash or a funny line makes chat spike, and Clipper cuts that moment into a captioned 9:16 clip ready for Shorts, Reels or TikTok. Only clip streams and videos you have permission to use.
+
 ## 🖼️ Screenshots
 
 <table>
